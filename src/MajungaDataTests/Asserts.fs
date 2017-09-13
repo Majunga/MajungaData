@@ -9,7 +9,6 @@ let notEqual a b =
 
 let greaterThan a b =
     Assert.IsTrue((b > a))
-
 let lessThan a b =
     Assert.IsTrue((b < a))
 

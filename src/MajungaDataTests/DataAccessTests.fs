@@ -6,8 +6,8 @@ open dal
 open modelTypes
 open dataServices
 open System.Linq
-open System.Data.Entity
 open System.Globalization
+open Majunga.Data.Entity
 
 let addNewSetting (i:int) =
     let setting = new Setting()
@@ -22,7 +22,7 @@ let createSettingsList =
 
 [<Test>]
 let ``Database Exists`` () =
-    (new dal.dataContext(connectionString)).Database.Exists() 
+    checkDbExists connectionString
         |> should equal true
 
 [<Test>]
@@ -31,16 +31,16 @@ let ``Create Record`` () =
     setting.Key <- "Test Key"
     setting.Value <- "Test Value"
 
-    settingsService.Create(setting) 
+    settingsService.Create setting
         |> greaterThan 0
 
     
 [<Test>]
 let ``Delete all Records`` () =
-    settingsService.ReadAll() 
+    settingsService.ReadAll 
         |> List.iter (fun (x:Setting) -> settingsService.Delete x)
 
-    settingsService.ReadAll() 
+    settingsService.ReadAll
         |> List.length 
         |> equal 0
 
@@ -50,9 +50,9 @@ let ``Delete all Records`` () =
 [<Test>]
 let ``Create Multiple Records`` () = 
     createSettingsList 
-        |> List.iter (fun x -> settingsService.Create(x) |> ignore)
+        |> List.iter (fun x -> settingsService.Create x |> ignore)
 
-    settingsService.ReadAll() 
+    settingsService.ReadAll
         |> List.length 
         |> should equal 20
 
