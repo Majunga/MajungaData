@@ -18,14 +18,14 @@ let ``Create Record`` () =
     setting.Key <- "Test Key"
     setting.Value <- "Test Value"
 
-    settingsService.addRecord(setting) |> greaterThan 0
+    settingsService.Create(setting) |> greaterThan 0
 
     
 [<Test>]
 let ``Delete all Records`` () =
-    settingsService.getAllRecords() |> List.iter (fun (x:Setting) -> settingsService.deleteRecord x)
+    settingsService.ReadAll() |> List.iter (fun (x:Setting) -> settingsService.Delete x)
 
-    settingsService.getAllRecords() |> List.length |> equal 0
+    settingsService.ReadAll() |> List.length |> equal 0
 
 [<Test>]
 let ``Custom Where Query`` () =
