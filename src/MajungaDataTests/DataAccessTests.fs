@@ -1,6 +1,6 @@
 ﻿module DataAccessTests
 
-open Asserts
+open FsUnit
 open NUnit.Framework
 open dal
 open modelTypes
@@ -8,7 +8,9 @@ open dataServices
 open System.Linq
 open System.Globalization
 open Majunga.Data.Entity
+open System
 
+/// Setup Functions
 let addNewSetting (i:int) =
     let setting = new Setting()
     setting.Key <- "Test Key" + i.ToString(CultureInfo.InvariantCulture)
@@ -19,7 +21,7 @@ let createSettingsList =
     List.init 20 (fun index -> addNewSetting index)
 
 
-
+/// CRUD Operation Tests
 [<Test>]
 let ``Database Exists`` () =
     checkDbExists connectionString
@@ -32,8 +34,7 @@ let ``Create Record`` () =
     setting.Value <- "Test Value"
 
     settingsService.Create setting
-        |> greaterThan 0
-
+        |> should be (greaterThan 0)
     
 [<Test>]
 let ``Delete all Records`` () =
@@ -42,10 +43,7 @@ let ``Delete all Records`` () =
 
     settingsService.ReadAll
         |> List.length 
-        |> equal 0
-
-
-
+        |> should equal 0
 
 [<Test>]
 let ``Create Multiple Records`` () = 
@@ -64,7 +62,7 @@ let ``Read Record`` () =
         |> settingsService.Create 
         |> settingsService.Read 
         |> (fun (x:Setting) -> x.Key = "Test Key99") 
-        |> equal true
+        |> should equal true
 
     ``Delete all Records``()
 
@@ -76,3 +74,26 @@ let ``Custom Where Query`` () =
         |> should equal "Test Value"
 
     ``Delete all Records``()
+
+
+/// Edge case Tests
+
+[<Test>]
+let ``Create Record that exists`` () =
+    let setting = new Setting()
+     
+    setting.Key <- "Test Key"
+    setting.Value <- "Test Value"
+    setting.Id <- settingsService.Create setting
+
+    (fun () -> settingsService.Create setting |> ignore) |> should throw typeof<InvalidOperationException>
+        
+    settingsService.Delete setting
+
+[<Test>]
+let ``Update Record that doesn't exists`` () =
+    let setting = new Setting()
+    setting.Key <- "Test Key"
+    setting.Value <- "Test Value"
+
+    (fun () -> settingsService.Update setting) |> should throw typeof<InvalidOperationException>
