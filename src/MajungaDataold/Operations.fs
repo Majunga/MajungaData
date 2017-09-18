@@ -2,15 +2,15 @@
 module Majunga.Data.Entity
 
 
-open Microsoft.EntityFrameworkCore
+open System.Data.Entity
 open System.Linq
 open Majunga.Data.Types
 open System
 open System.Linq.Expressions
 open Helpers
 
-//let checkDbExists (conn:string) =
-//    Database.Exists(conn)
+let checkDbExists (conn:string) =
+    System.Data.Entity.Database.Exists(conn)
 
 let Save (db:DbContext) =
     db.SaveChanges() |> ignore
@@ -23,7 +23,7 @@ let createEntity<'TEntity when 'TEntity : not struct and 'TEntity :> IEntity>
         (model:'TEntity) (db:DbContext) =
     let value = db |> readEntity<'TEntity> model.Id |> checkNull 
 
-    if (not value) then raise (InvalidOperationException("Entity shouldn't already exist"))
+    if (value = false) then raise (new InvalidOperationException("Entity shouldn't already exist"))
 
     db.Set<'TEntity>().Add(model) |> ignore
     Save db
@@ -31,7 +31,7 @@ let createEntity<'TEntity when 'TEntity : not struct and 'TEntity :> IEntity>
 
 let updateEntity<'TEntity when 'TEntity : not struct and 'TEntity :> IEntity> 
         (model:'TEntity) (db:DbContext) =
-    if model.Id = 0 then raise (InvalidOperationException("Entity missing Id Value"))
+    if model.Id = 0 then raise (new InvalidOperationException("Entity missing Id Value"))
     
     db.Set<'TEntity>().Attach(model)  |> ignore
     db.Entry(model).State <- EntityState.Modified
