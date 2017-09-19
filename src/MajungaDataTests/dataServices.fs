@@ -1,14 +1,17 @@
-﻿module dataServices
+﻿module DataServices
 
 open Microsoft.EntityFrameworkCore
 open Microsoft.Extensions.Configuration
 open System
 
-open dal
+open DAL
 open modelTypes
 open Majunga.Data.Entity
 
-let context = new dataContext()
+let context = 
+    let dataContext = new DataContext()
+    dataContext.Database.EnsureCreated() |> ignore
+    dataContext
 
 let settingsService = new Operations<Setting>(context)
 
