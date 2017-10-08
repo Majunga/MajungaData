@@ -14,88 +14,98 @@ module DataAccessTests =
     open Majunga.Data.Entity
     open Asserts
     /// Setup Functions
+    let settingsService name = new Operations<Setting>(CreateContext name)
+
     let addNewSetting (i:int) =
-        let setting = Setting()
-        setting.Key <- "Test Key" + i.ToString(CultureInfo.InvariantCulture)
-        setting.Value <- "Test Value" + i.ToString(CultureInfo.InvariantCulture)
-        setting
+        Setting(Key = "Test Key" + i.ToString(CultureInfo.InvariantCulture),Value = "Test Value" + i.ToString(CultureInfo.InvariantCulture))
 
     let createSettingsList =
         List.init 20 (addNewSetting)
 
     [<Fact>]
     let ``Create Record`` () = 
+        let service = settingsService "Create"
         let setting = Setting()
         setting.Key <- "Test Key"
         setting.Value <- "Test Value"
 
-        settingsService.Create setting
+        service.Create  setting
             |> greaterThan 0
-        
-    [<Fact>]
-    let ``Delete all Records`` () =
-        settingsService.ReadAll 
-            |> List.iter (settingsService.Delete)
-
-        settingsService.ReadAll
-            |> List.length 
-            |> equal 0
-
-
 
     [<Fact>]
     let ``Read Record`` () = 
+        let service = settingsService "Delete"
+        
         addNewSetting 99 
-            |> settingsService.Create 
-            |> settingsService.Read 
+            |> service.Create 
+            |> service.Read 
             |> (fun (x:Setting) -> x.Key = "Test Key99") 
             |> equal true
 
-        ``Delete all Records``()
-
     [<Fact>]
     let ``Custom Where Query`` () =
-        ``Create Record``()
+        let service = settingsService "Query"
 
-        (settingsService.Query).Where((fun x -> x.Key = "Test Key")).FirstOrDefault().Value 
+        let setting = Setting()
+        setting.Key <- "Test Key"
+        setting.Value <- "Test Value"
+
+        service.Create  setting |> ignore
+
+        (service.Query).Where((fun x -> x.Key = "Test Key")).FirstOrDefault().Value 
             |> equal "Test Value"
 
-        ``Delete all Records``()
-
-
     /// Edge case Tests
-    let createExistingRecord () = 
-        let setting = Setting()
-        setting.Key <- "Test Key"
-        setting.Value <- "Test Value"
-        setting.Id <- settingsService.Create setting
+    // let createExistingRecord () = 
+    //     let service = settingsService "CreateExisting"
+    
+    //     let setting = Setting()
+    //     setting.Key <- "Test Key"
+    //     setting.Value <- "Test Value"
+    //     setting.Id <- service.Create setting
 
-        settingsService.Create setting |> ignore
+    //     service.Create setting |> ignore
             
-        settingsService.Delete setting
 
-    [<Fact>]
-    let ``Create Record that exists`` () =
-        Assert.ThrowsAny(createExistingRecord)
+    // [<Fact>]
+    // let ``Create Record that exists`` () =
+    
+    //     Assert.ThrowsAny(createExistingRecord)
 
-    let updateRecordThatDoesntExist () =
-        let setting = Setting()
-        setting.Key <- "Test Key"
-        setting.Value <- "Test Value"
-        settingsService.Update setting
+    // let updateRecordThatDoesntExist () =
+    //     let service = settingsService "CreateExisting"
+    
+    //     let setting = Setting()
+    //     setting.Key <- "Test Key"
+    //     setting.Value <- "Test Value"
+    //     service.Update setting
 
-    [<Fact>]
-    let ``Update Record that doesn't exists`` () =
+    // [<Fact>]
+    // let ``Update Record that doesn't exists`` () =
+    //     Assert.ThrowsAny(updateRecordThatDoesntExist)
 
-        Assert.ThrowsAny(updateRecordThatDoesntExist)
+    // [<Fact>]
+    // let ``Create Multiple Records`` () = 
+    //     let service = settingsService "CreateMultiple"
+    
+    //     createSettingsList 
+    //         |> List.map service.Create |> ignore
+    //         // |>  List.iter 
 
-    [<Fact>]
-    let ``Create Multiple Records`` () = 
-        createSettingsList 
-            |> List.iter (fun x -> settingsService.Create x |> ignore)
+    //     service.ReadAll
+    //         |> List.length 
+    //         |> equal 20
 
-        settingsService.ReadAll
-            |> List.length 
-            |> equal 20
+                    
+    // [<Fact>]
+    // let ``Delete all Records`` () =
+    //     let service = settingsService "Delete"
 
-        ``Delete all Records``()
+    //     createSettingsList 
+    //         |> List.iter (fun x -> service.Create x |> ignore)
+    //     service.ReadAll 
+    //         |> List.iter (service.Delete)
+
+    //     service.ReadAll
+    //         |> List.length 
+    //         |> equal 0
